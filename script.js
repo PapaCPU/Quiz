@@ -14,11 +14,8 @@ let aktuelleDatei = null;
 
 // Elemente aus dem DOM
 const startmenue = document.getElementById('startmenue');
-const textEingebenButton = document.getElementById('text-eingeben-button');
-const dateiHochladenButton = document.getElementById('datei-hochladen-button');
+const fragenHochladenButton = document.getElementById('fragen-hochladen-button');
 const dateiInput = document.getElementById('datei-input');
-const textEingabe = document.getElementById('text-eingabe');
-const textSendenButton = document.getElementById('text-senden-button');
 const quizContainer = document.getElementById('quiz-container');
 const weiterButton = document.getElementById('weiter-button');
 const speichernButton = document.getElementById('speichern-button');
@@ -38,80 +35,8 @@ const jaButton = document.getElementById('ja-button');
 const neinButton = document.getElementById('nein-button');
 const fortschrittsbalken = document.getElementById('fortschrittsbalken');
 
-// Event Listener für "Text eingeben"
-textEingebenButton.addEventListener('click', () => {
-  textEingabe.style.display = 'block';
-  textSendenButton.style.display = 'block';
-  dateiInput.style.display = 'none';
-});
-
-// Event Listener für "Text senden"
-textSendenButton.addEventListener('click', () => {
-  const text = textEingabe.value.trim();
-  if (text) {
-    textAnServerSenden(text);
-  } else {
-    alert('Bitte geben Sie einen Text ein.');
-  }
-});
-
-// Funktion zum Senden des Textes an den Server
-function textAnServerSenden(text) {
-  // Zeige einen Ladeindikator an
-  const ladeAnzeige = document.createElement('div');
-  ladeAnzeige.id = 'lade-anzeige';
-  ladeAnzeige.textContent = 'Das Quiz wird generiert, bitte warten...';
-  startmenue.appendChild(ladeAnzeige);
-
-  fetch('http://localhost:5000/generate_quiz', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text: text }),
-  })
-    .then(response => response.json())
-    .then(data => {
-      // Entferne den Ladeindikator
-      ladeAnzeige.remove();
-
-      if (data.quiz) {
-        // Parse das empfangene Quiz
-        const quizText = data.quiz;
-        const fragen = parseFragen(quizText);
-        if (fragen.length > 0) {
-          // Speichere das Quiz im localStorage
-          const dateiName = 'Generiertes Quiz';
-          const dateien = JSON.parse(localStorage.getItem('quizDateien')) || {};
-          dateien[dateiName] = {
-            fragen: fragen,
-            richtigBeantwortet: 0,
-            gesamtFragen: fragen.length
-          };
-          localStorage.setItem('quizDateien', JSON.stringify(dateien));
-          updateDateiListe();
-          alert('Das Quiz wurde erfolgreich generiert!');
-          textEingabe.value = ''; // Eingabefeld zurücksetzen
-          textEingabe.style.display = 'none';
-          textSendenButton.style.display = 'none';
-        } else {
-          alert('Das empfangene Quiz konnte nicht verarbeitet werden.');
-        }
-      } else {
-        console.error('Fehler:', data.error);
-        alert('Es gab einen Fehler bei der Generierung des Quiz.');
-      }
-    })
-    .catch((error) => {
-      // Entferne den Ladeindikator
-      ladeAnzeige.remove();
-      console.error('Fehler:', error);
-      alert('Verbindungsfehler. Bitte versuchen Sie es später erneut.');
-    });
-}
-
-// Event Listener für "Datei hochladen"
-dateiHochladenButton.addEventListener('click', () => {
+// Event Listener für "Fragen hochladen"
+fragenHochladenButton.addEventListener('click', () => {
   dateiInput.click();
 });
 
@@ -122,9 +47,23 @@ dateiInput.addEventListener('change', (event) => {
     const reader = new FileReader();
     reader.onload = function(e) {
       const text = e.target.result;
-      // Sende den Text an den Server
-      textAnServerSenden(text);
-      dateiInput.value = ''; // Reset des Dateiauswahlfelds
+      const fragen = parseFragen(text);
+      if (fragen.length > 0) {
+        // Speichere die Datei und die Fragen im localStorage
+        const dateiName = file.name;
+        const dateien = JSON.parse(localStorage.getItem('quizDateien')) || {};
+        dateien[dateiName] = {
+          fragen: fragen,
+          richtigBeantwortet: 0,
+          gesamtFragen: fragen.length
+        };
+        localStorage.setItem('quizDateien', JSON.stringify(dateien));
+        updateDateiListe();
+        alert('Fragen erfolgreich hochgeladen!');
+        dateiInput.value = ''; // Reset des Dateiauswahlfelds
+      } else {
+        alert('Die hochgeladene Datei enthält keine gültigen Fragen.');
+      }
     };
     reader.readAsText(file);
   } else {
@@ -169,7 +108,7 @@ function updateDateiListe() {
     dateiLoeschenButton.textContent = 'Löschen';
     dateiLoeschenButton.classList.add('datei-loeschen-button');
     dateiLoeschenButton.addEventListener('click', () => {
-      if (confirm(`Möchtest du das Quiz "${dateiName}" wirklich löschen?`)) {
+      if (confirm(`Möchtest du die Datei "${dateiName}" wirklich löschen?`)) {
         delete dateien[dateiName];
         localStorage.setItem('quizDateien', JSON.stringify(dateien));
         updateDateiListe();
@@ -189,7 +128,255 @@ function updateDateiListe() {
   updateSpeicherplatzAnzeige();
 }
 
-// Rest des Codes bleibt unverändert...
+// Funktion zum Starten des Quiz mit ausgewählter Datei
+function startQuizMitDatei(dateiName) {
+  const dateien = JSON.parse(localStorage.getItem('quizDateien'));
+  if (dateien && dateien[dateiName]) {
+    alleFragen = dateien[dateiName].fragen;
+    nochNichtBeantworteteFragen = mischeFragen([...alleFragen]);
+    richtigBeantworteteFragen = [];
+    falschBeantworteteFragen = [];
+    aktuelleBlockFragen = [];
+    aktuelleFrageIndex = 0;
+    aktuelleFrageNummer = 1;
+    startmenue.style.display = 'none';
+    quizContainer.style.display = 'block';
+    starteNeuenBlock();
+    gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+    updateFortschrittsbalken();
+    zeigeFrage();
+    starteTimer();
+  } else {
+    alert('Fehler beim Laden der Datei.');
+  }
+}
+
+// Funktion zum Aktualisieren der Speicherplatzanzeige
+function updateSpeicherplatzAnzeige() {
+  const total = 5 * 1024 * 1024; // 5 MB
+  const used = unescape(encodeURIComponent(JSON.stringify(localStorage))).length;
+  const remaining = total - used;
+  speicherplatzAnzeige.textContent = `Verfügbarer Speicherplatz: ${(remaining / 1024).toFixed(2)} KB von ${(total / 1024).toFixed(2)} KB`;
+}
+
+// Funktion zum Aktualisieren des Fortschrittsbalkens
+function updateFortschrittsbalken() {
+  const progress = (aktuelleFrageNummer - 1) / aktuelleBlockFragen.length * 100;
+  fortschrittsbalken.style.width = `${progress}%`;
+}
+
+// Funktion zum Parsen der Textdatei in ein Array von Fragen
+function parseFragen(text) {
+  const fragenArray = [];
+  const fragenTexte = text.split('---').filter(f => f.trim().length > 0);
+
+  fragenTexte.forEach(fragenText => {
+    const zeilen = fragenText.trim().split('\n').filter(l => l.trim().length > 0);
+    if (zeilen.length >= 5) {
+      const frageObj = {
+        frage: '',
+        optionen: [],
+        antwort: 0
+      };
+
+      zeilen.forEach((zeile, index) => {
+        if (index === 0) {
+          frageObj.frage = zeile.replace(/\*\*/g, '').trim();
+        } else if (index <= 3) {
+          frageObj.optionen.push(zeile.trim());
+        } else {
+          frageObj.antwort = parseInt(zeile.replace(/\*\*/g, '').trim());
+        }
+      });
+
+      if (frageObj.frage && frageObj.optionen.length === 3 && frageObj.antwort >= 1 && frageObj.antwort <= 3) {
+        fragenArray.push(frageObj);
+      }
+    }
+  });
+
+  return fragenArray;
+}
+
+// Funktion zum Starten eines neuen Blocks
+function starteNeuenBlock() {
+  aktuelleBlockFragen = falschBeantworteteFragen.concat(nochNichtBeantworteteFragen.splice(0, blockGroesse - falschBeantworteteFragen.length));
+  falschBeantworteteFragen = [];
+  aktuelleFrageIndex = 0;
+  aktuelleFrageNummer = 1;
+  updateFortschrittsbalken();
+}
+
+// Funktion zum Mischen der Fragen
+function mischeFragen(fragenArray) {
+  return fragenArray.sort(() => Math.random() - 0.5);
+}
+
+// Funktion zum Anzeigen der aktuellen Frage
+function zeigeFrage() {
+  const frageObj = aktuelleBlockFragen[aktuelleFrageIndex];
+  frageText.textContent = frageObj.frage;
+  optionenContainer.innerHTML = '';
+  frageObj.optionen.forEach((option, index) => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.classList.add('option-button');
+    button.setAttribute('aria-pressed', 'false');
+    button.onclick = () => {
+      waehleOption(index + 1, button);
+    };
+    optionenContainer.appendChild(button);
+  });
+
+  aktuelleFrageNummerElement.textContent = aktuelleFrageNummer;
+  weiterButton.disabled = true;
+}
+
+// Funktion zur Verarbeitung der ausgewählten Option
+function waehleOption(auswahl, button) {
+  const frageObj = aktuelleBlockFragen[aktuelleFrageIndex];
+  const buttons = document.querySelectorAll('.option-button');
+  buttons.forEach(btn => {
+    btn.disabled = true;
+    btn.setAttribute('aria-pressed', 'false');
+  });
+
+  button.setAttribute('aria-pressed', 'true');
+
+  if (auswahl === frageObj.antwort) {
+    richtigBeantworteteFragen.push(frageObj);
+    button.classList.add('correct');
+  } else {
+    falschBeantworteteFragen.push(frageObj);
+    button.classList.add('incorrect');
+    buttons[frageObj.antwort - 1].classList.add('correct');
+  }
+
+  weiterButton.disabled = false;
+}
+
+// Funktion zum Starten des Timers
+function starteTimer() {
+  zeitUebrig = 30;
+  zeitElement.textContent = zeitUebrig;
+  timer = setInterval(() => {
+    zeitUebrig--;
+    zeitElement.textContent = zeitUebrig;
+    if (zeitUebrig <= 0) {
+      clearInterval(timer);
+      zurNaechstenFrage();
+    }
+  }, 1000);
+}
+
+// Funktion zum Anhalten des Timers
+function stoppeTimer() {
+  clearInterval(timer);
+}
+
+// Funktion zum Weitergehen zur nächsten Frage oder Block
+function zurNaechstenFrage() {
+  stoppeTimer();
+  aktuelleFrageIndex++;
+  aktuelleFrageNummer++;
+  if (aktuelleFrageIndex < aktuelleBlockFragen.length) {
+    updateFortschrittsbalken();
+    zeigeFrage();
+    starteTimer();
+  } else {
+    if (falschBeantworteteFragen.length > 0 || nochNichtBeantworteteFragen.length > 0) {
+      starteNeuenBlock();
+      if (aktuelleBlockFragen.length > 0) {
+        gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+        updateFortschrittsbalken();
+        zeigeFrage();
+        starteTimer();
+      } else {
+        quizBeenden();
+      }
+    } else {
+      quizBeenden();
+    }
+  }
+}
+
+// Funktion zum Beenden des Quiz
+function quizBeenden() {
+  aktualisiereDateiStatistik();
+  quizEndeModal.style.display = 'block';
+}
+
+// Funktion zum Aktualisieren der Datei-Statistik
+function aktualisiereDateiStatistik() {
+  const dateien = JSON.parse(localStorage.getItem('quizDateien'));
+  if (dateien && dateien[aktuelleDatei]) {
+    dateien[aktuelleDatei].richtigBeantwortet = richtigBeantworteteFragen.length;
+    localStorage.setItem('quizDateien', JSON.stringify(dateien));
+    updateDateiListe();
+  }
+}
+
+// Event Listener für den Weiter-Button
+weiterButton.addEventListener('click', () => {
+  zurNaechstenFrage();
+});
+
+// Event Listener für den Speichern & Beenden-Button
+speichernButton.addEventListener('click', () => {
+  speichereFortschritt();
+  bestaetigungModal.style.display = 'block';
+});
+
+// Event Listener für den Hauptmenü-Button
+hauptmenueButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'block';
+});
+
+// Event Listener für das Bestätigungs-Modal
+jaButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'none';
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  stoppeTimer();
+  updateDateiListe();
+});
+
+// Wenn der Benutzer "Nein" wählt
+neinButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'none';
+});
+
+// Event Listener für das Schließen des Quiz-Ende Modals
+schliessenButton.addEventListener('click', () => {
+  quizEndeModal.style.display = 'none';
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  updateDateiListe();
+});
+
+// Event Listener für den "Neu starten"-Button
+neuStartenButton.addEventListener('click', () => {
+  quizEndeModal.style.display = 'none';
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  updateDateiListe();
+});
+
+// Funktion zum Speichern des Fortschritts
+function speichereFortschritt() {
+  const fortschritt = {
+    alleFragen,
+    nochNichtBeantworteteFragen,
+    aktuelleBlockFragen,
+    richtigBeantworteteFragen,
+    falschBeantworteteFragen,
+    aktuelleFrageIndex,
+    aktuelleFrageNummer,
+    aktuelleDatei
+  };
+  localStorage.setItem('quizFortschritt', JSON.stringify(fortschritt));
+  aktualisiereDateiStatistik();
+}
 
 // Beim Laden der Seite
 window.onload = () => {
