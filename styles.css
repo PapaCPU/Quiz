@@ -58,6 +58,46 @@ body {
   display: none;
 }
 
+/* Textarea für Texteingabe */
+#text-eingabe {
+  width: 100%;
+  height: 150px;
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+  display: none;
+}
+
+#text-senden-button {
+  background-color: #28a745;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+  display: none;
+}
+
+#text-senden-button:hover {
+  background-color: #218838;
+}
+
+/* Ladeanzeige */
+#lade-anzeige {
+  text-align: center;
+  font-size: 1.2em;
+  color: #555;
+  margin-top: 20px;
+}
+
 /* Datei-Liste */
 #datei-liste-container {
   margin-top: 20px;
