@@ -9,15 +9,15 @@ body {
 /* Startmenü */
 #startmenue {
   max-width: 600px;
-  margin: 50px auto;
+  margin: 20px auto;
   background-color: #ffffff;
-  padding: 30px;
+  padding: 20px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #startmenue h1 {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   color: #333333;
 }
 
@@ -25,9 +25,9 @@ body {
   background-color: #007BFF;
   color: #ffffff;
   border: none;
-  padding: 15px 30px;
-  margin: 10px;
-  font-size: 18px;
+  padding: 15px 20px;
+  margin: 10px 5px;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -42,17 +42,67 @@ body {
   cursor: not-allowed;
 }
 
-/* Verstecktes Datei-Input */
 #datei-input {
   display: none;
+}
+
+/* Datei-Liste */
+#datei-liste-container {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.datei-eintrag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e9ecef;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.datei-info {
+  flex-grow: 1;
+}
+
+.datei-name {
+  font-weight: bold;
+}
+
+.datei-statistik {
+  font-size: 14px;
+  color: #555555;
+}
+
+.datei-loeschen-button {
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-left: 10px;
+}
+
+.datei-loeschen-button:hover {
+  background-color: #c82333;
+}
+
+/* Speicherplatz-Anzeige */
+#speicherplatz-anzeige {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555555;
 }
 
 /* Quiz-Container */
 #quiz-container {
   max-width: 600px;
-  margin: 50px auto;
+  margin: 20px auto;
   background-color: #ffffff;
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -63,13 +113,13 @@ body {
 
 #timer {
   text-align: right;
-  font-size: 18px;
+  font-size: 16px;
   color: #555555;
 }
 
 #frage-text {
-  font-size: 24px;
-  margin-bottom: 20px;
+  font-size: 20px;
+  margin-bottom: 15px;
   color: #333333;
 }
 
@@ -82,9 +132,9 @@ body {
   background-color: #007BFF;
   color: #ffffff;
   border: none;
-  padding: 15px;
-  margin-bottom: 10px;
-  font-size: 18px;
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -102,20 +152,20 @@ body {
   background-color: #dc3545;
 }
 
-#weiter-button, #speichern-button {
+#weiter-button, #speichern-button, #hauptmenue-button {
   background-color: #ffc107;
   color: #ffffff;
   border: none;
-  padding: 15px;
-  font-size: 18px;
+  padding: 12px;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 15px;
   transition: background-color 0.3s ease;
 }
 
-#weiter-button:hover:not(:disabled), #speichern-button:hover {
+#weiter-button:hover:not(:disabled), #speichern-button:hover, #hauptmenue-button:hover {
   background-color: #e0a800;
 }
 
@@ -127,7 +177,7 @@ body {
 #fortschritt {
   text-align: center;
   margin-top: 10px;
-  font-size: 16px;
+  font-size: 14px;
   color: #555555;
 }
 
@@ -146,11 +196,11 @@ body {
 
 .modal-content {
   background-color: #ffffff;
-  margin: 15% auto; 
+  margin: 20% auto; 
   padding: 20px;
   border: 1px solid #888888;
   width: 80%; 
-  max-width: 500px;
+  max-width: 400px;
   text-align: center;
   border-radius: 10px;
 }
@@ -158,7 +208,7 @@ body {
 .close-button {
   color: #aaaaaa;
   float: right;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   cursor: pointer;
 }
@@ -170,38 +220,43 @@ body {
   cursor: pointer;
 }
 
-#neu-starten-button {
+#neu-starten-button, #ja-button, #nein-button {
   background-color: #28a745;
   color: #ffffff;
   border: none;
-  padding: 15px;
-  font-size: 18px;
+  padding: 12px 20px;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
-  margin-top: 20px;
+  margin: 10px 5px;
 }
 
-#neu-starten-button:hover {
+#neu-starten-button:hover, #ja-button:hover, #nein-button:hover {
   background-color: #218838;
 }
 
 @media screen and (max-width: 600px) {
   #quiz-container, #startmenue {
-    margin: 20px;
-    padding: 20px;
+    margin: 10px;
+    padding: 15px;
   }
 
   #frage-text {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .option-button {
-    font-size: 16px;
-    padding: 12px;
+    font-size: 14px;
+    padding: 10px;
   }
 
-  #weiter-button, #speichern-button, #startmenue button {
-    font-size: 16px;
-    padding: 12px;
+  #weiter-button, #speichern-button, #hauptmenue-button, #startmenue button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .modal-content {
+    margin-top: 50%;
+    padding: 15px;
   }
 }
