@@ -33,6 +33,7 @@ const speicherplatzAnzeige = document.getElementById('speicherplatz-anzeige');
 const bestaetigungModal = document.getElementById('bestaetigung-modal');
 const jaButton = document.getElementById('ja-button');
 const neinButton = document.getElementById('nein-button');
+const fortschrittsbalken = document.getElementById('fortschrittsbalken');
 
 // Event Listener für "Fragen hochladen"
 fragenHochladenButton.addEventListener('click', () => {
@@ -92,7 +93,8 @@ function updateDateiListe() {
     dateiInfo.appendChild(dateiNameElement);
     dateiInfo.appendChild(dateiStatistik);
 
-    const dateiButtons = document.createElement('div');
+    const dateiButtonsContainer = document.createElement('div');
+    dateiButtonsContainer.classList.add('datei-buttons');
 
     const quizStartenButton = document.createElement('button');
     quizStartenButton.textContent = 'Quiz starten';
@@ -114,11 +116,11 @@ function updateDateiListe() {
       }
     });
 
-    dateiButtons.appendChild(quizStartenButton);
-    dateiButtons.appendChild(dateiLoeschenButton);
+    dateiButtonsContainer.appendChild(quizStartenButton);
+    dateiButtonsContainer.appendChild(dateiLoeschenButton);
 
     dateiEintrag.appendChild(dateiInfo);
-    dateiEintrag.appendChild(dateiButtons);
+    dateiEintrag.appendChild(dateiButtonsContainer);
 
     dateiListeContainer.appendChild(dateiEintrag);
   }
@@ -141,6 +143,7 @@ function startQuizMitDatei(dateiName) {
     quizContainer.style.display = 'block';
     starteNeuenBlock();
     gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+    updateFortschrittsbalken();
     zeigeFrage();
     starteTimer();
   } else {
@@ -154,6 +157,12 @@ function updateSpeicherplatzAnzeige() {
   const used = unescape(encodeURIComponent(JSON.stringify(localStorage))).length;
   const remaining = total - used;
   speicherplatzAnzeige.textContent = `Verfügbarer Speicherplatz: ${(remaining / 1024).toFixed(2)} KB von ${(total / 1024).toFixed(2)} KB`;
+}
+
+// Funktion zum Aktualisieren des Fortschrittsbalkens
+function updateFortschrittsbalken() {
+  const progress = (aktuelleFrageNummer - 1) / aktuelleBlockFragen.length * 100;
+  fortschrittsbalken.style.width = `${progress}%`;
 }
 
 // Funktion zum Parsen der Textdatei in ein Array von Fragen
@@ -195,6 +204,7 @@ function starteNeuenBlock() {
   falschBeantworteteFragen = [];
   aktuelleFrageIndex = 0;
   aktuelleFrageNummer = 1;
+  updateFortschrittsbalken();
 }
 
 // Funktion zum Mischen der Fragen
@@ -211,6 +221,7 @@ function zeigeFrage() {
     const button = document.createElement('button');
     button.textContent = option;
     button.classList.add('option-button');
+    button.setAttribute('aria-pressed', 'false');
     button.onclick = () => {
       waehleOption(index + 1, button);
     };
@@ -227,7 +238,10 @@ function waehleOption(auswahl, button) {
   const buttons = document.querySelectorAll('.option-button');
   buttons.forEach(btn => {
     btn.disabled = true;
+    btn.setAttribute('aria-pressed', 'false');
   });
+
+  button.setAttribute('aria-pressed', 'true');
 
   if (auswahl === frageObj.antwort) {
     richtigBeantworteteFragen.push(frageObj);
@@ -266,6 +280,7 @@ function zurNaechstenFrage() {
   aktuelleFrageIndex++;
   aktuelleFrageNummer++;
   if (aktuelleFrageIndex < aktuelleBlockFragen.length) {
+    updateFortschrittsbalken();
     zeigeFrage();
     starteTimer();
   } else {
@@ -273,6 +288,7 @@ function zurNaechstenFrage() {
       starteNeuenBlock();
       if (aktuelleBlockFragen.length > 0) {
         gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+        updateFortschrittsbalken();
         zeigeFrage();
         starteTimer();
       } else {
@@ -325,6 +341,7 @@ jaButton.addEventListener('click', () => {
   updateDateiListe();
 });
 
+// Wenn der Benutzer "Nein" wählt
 neinButton.addEventListener('click', () => {
   bestaetigungModal.style.display = 'none';
 });
@@ -379,6 +396,7 @@ window.onload = () => {
       startmenue.style.display = 'none';
       quizContainer.style.display = 'block';
       gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+      updateFortschrittsbalken();
       zeigeFrage();
       starteTimer();
     }
