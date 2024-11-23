@@ -3,29 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Quiz-App</title>
+  <!-- Viewport-Meta-Tag für mobile Geräte -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Favicon hinzufügen -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Startmenü -->
-  <div id="startmenue">
+  <main id="startmenue" class="container">
     <h1>Willkommen zur Quiz-App</h1>
     <button id="fragen-hochladen-button">Fragen hochladen</button>
     <input type="file" id="datei-input" accept=".txt">
-    <div id="datei-liste-container">
+    <section id="datei-liste-container">
       <!-- Liste der hochgeladenen Dateien wird hier eingefügt -->
-    </div>
+    </section>
     <div id="speicherplatz-anzeige">
       <!-- Anzeige des verfügbaren Speicherplatzes -->
     </div>
-  </div>
+  </main>
 
   <!-- Quiz-Container (versteckt beim Start) -->
-  <div id="quiz-container" style="display: none;">
+  <main id="quiz-container" class="container" style="display: none;">
     <h1>Quiz-App</h1>
     <div id="timer">Zeit: <span id="zeit">30</span> Sekunden</div>
     <div id="frage-container">
       <h2 id="frage-text"></h2>
-      <div id="optionen-container">
+      <div id="optionen-container" role="radiogroup">
         <!-- Antwortoptionen werden hier dynamisch eingefügt -->
       </div>
     </div>
@@ -33,9 +37,13 @@
     <div id="fortschritt">
       Frage <span id="aktuelle-frage-nummer">1</span> von <span id="gesamt-fragen">10</span>
     </div>
+    <!-- Fortschrittsbalken -->
+    <div id="fortschrittsbalken-container">
+      <div id="fortschrittsbalken"></div>
+    </div>
     <button id="hauptmenue-button">Hauptmenü</button>
     <button id="speichern-button">Speichern & Beenden</button>
-  </div>
+  </main>
 
   <!-- Modal für Quiz-Ende -->
   <div id="quiz-ende-modal" class="modal">
@@ -56,6 +64,7 @@
     </div>
   </div>
 
+  <!-- Skript am Ende des Body für bessere Performance -->
   <script src="script.js"></script>
 </body>
 </html>
