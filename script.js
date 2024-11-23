@@ -11,18 +11,69 @@ let zeitUebrig = 30;
 let aktuelleFrageNummer = 1;
 const blockGroesse = 10;
 
-// Funktion zum Laden der Fragen aus der Textdatei
-function ladeFragen() {
-  fetch('fragen.txt')
-    .then(response => response.text())
-    .then(text => {
-      alleFragen = parseFragen(text);
-      initialisiereQuiz();
-    })
-    .catch(error => {
-      console.error('Fehler beim Laden der Fragen:', error);
-    });
+// Elemente aus dem DOM
+const startmenue = document.getElementById('startmenue');
+const fragenHochladenButton = document.getElementById('fragen-hochladen-button');
+const dateiInput = document.getElementById('datei-input');
+const quizStartenButton = document.getElementById('quiz-starten-button');
+const weiterspielenButton = document.getElementById('weiterspielen-button');
+const quizContainer = document.getElementById('quiz-container');
+const weiterButton = document.getElementById('weiter-button');
+const speichernButton = document.getElementById('speichern-button');
+const frageText = document.getElementById('frage-text');
+const optionenContainer = document.getElementById('optionen-container');
+const aktuelleFrageNummerElement = document.getElementById('aktuelle-frage-nummer');
+const gesamtFragenElement = document.getElementById('gesamt-fragen');
+const zeitElement = document.getElementById('zeit');
+const quizEndeModal = document.getElementById('quiz-ende-modal');
+const schliessenButton = document.getElementById('schliessen-button');
+const neuStartenButton = document.getElementById('neu-starten-button');
+
+// Überprüfen, ob ein gespeicherter Spielstand vorhanden ist
+if (localStorage.getItem('quizFortschritt')) {
+  weiterspielenButton.disabled = false;
 }
+
+// Event Listener für "Fragen hochladen"
+fragenHochladenButton.addEventListener('click', () => {
+  dateiInput.click();
+});
+
+// Event Listener für Datei-Upload
+dateiInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file && file.name.endsWith('.txt')) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      alleFragen = parseFragen(text);
+      if (alleFragen.length > 0) {
+        nochNichtBeantworteteFragen = mischeFragen([...alleFragen]);
+        quizStartenButton.disabled = false;
+        alert('Fragen erfolgreich hochgeladen!');
+      } else {
+        alert('Die hochgeladene Datei enthält keine gültigen Fragen.');
+      }
+    };
+    reader.readAsText(file);
+  } else {
+    alert('Bitte wähle eine gültige .txt-Datei aus.');
+  }
+});
+
+// Event Listener für "Quiz starten"
+quizStartenButton.addEventListener('click', () => {
+  startmenue.style.display = 'none';
+  quizContainer.style.display = 'block';
+  initialisiereQuiz();
+});
+
+// Event Listener für "Weiterspielen"
+weiterspielenButton.addEventListener('click', () => {
+  startmenue.style.display = 'none';
+  quizContainer.style.display = 'block';
+  initialisiereQuiz(true);
+});
 
 // Funktion zum Parsen der Textdatei in ein Array von Fragen
 function parseFragen(text) {
@@ -31,46 +82,54 @@ function parseFragen(text) {
 
   fragenTexte.forEach(fragenText => {
     const zeilen = fragenText.trim().split('\n').filter(l => l.trim().length > 0);
-    const frageObj = {
-      frage: '',
-      optionen: [],
-      antwort: 0
-    };
+    if (zeilen.length >= 5) {
+      const frageObj = {
+        frage: '',
+        optionen: [],
+        antwort: 0
+      };
 
-    zeilen.forEach((zeile, index) => {
-      if (index === 0) {
-        frageObj.frage = zeile.replace(/\*\*/g, '').trim();
-      } else if (index <= 3) {
-        frageObj.optionen.push(zeile.trim());
-      } else {
-        frageObj.antwort = parseInt(zeile.replace(/\*\*/g, '').trim());
+      zeilen.forEach((zeile, index) => {
+        if (index === 0) {
+          frageObj.frage = zeile.replace(/\*\*/g, '').trim();
+        } else if (index <= 3) {
+          frageObj.optionen.push(zeile.trim());
+        } else {
+          frageObj.antwort = parseInt(zeile.replace(/\*\*/g, '').trim());
+        }
+      });
+
+      if (frageObj.frage && frageObj.optionen.length === 3 && frageObj.antwort >= 1 && frageObj.antwort <= 3) {
+        fragenArray.push(frageObj);
       }
-    });
-
-    fragenArray.push(frageObj);
+    }
   });
 
   return fragenArray;
 }
 
 // Funktion zum Initialisieren des Quiz
-function initialisiereQuiz() {
-  // Überprüfen, ob ein gespeicherter Fortschritt vorhanden ist
-  const gespeicherterFortschritt = JSON.parse(localStorage.getItem('quizFortschritt'));
-  if (gespeicherterFortschritt) {
-    alleFragen = gespeicherterFortschritt.alleFragen;
-    nochNichtBeantworteteFragen = gespeicherterFortschritt.nochNichtBeantworteteFragen;
-    aktuelleBlockFragen = gespeicherterFortschritt.aktuelleBlockFragen;
-    richtigBeantworteteFragen = gespeicherterFortschritt.richtigBeantworteteFragen;
-    falschBeantworteteFragen = gespeicherterFortschritt.falschBeantworteteFragen;
-    aktuelleFrageIndex = gespeicherterFortschritt.aktuelleFrageIndex;
-    aktuelleFrageNummer = gespeicherterFortschritt.aktuelleFrageNummer;
+function initialisiereQuiz(fortsetzen = false) {
+  if (fortsetzen) {
+    // Gespeicherten Fortschritt laden
+    const gespeicherterFortschritt = JSON.parse(localStorage.getItem('quizFortschritt'));
+    if (gespeicherterFortschritt) {
+      alleFragen = gespeicherterFortschritt.alleFragen;
+      nochNichtBeantworteteFragen = gespeicherterFortschritt.nochNichtBeantworteteFragen;
+      aktuelleBlockFragen = gespeicherterFortschritt.aktuelleBlockFragen;
+      richtigBeantworteteFragen = gespeicherterFortschritt.richtigBeantworteteFragen;
+      falschBeantworteteFragen = gespeicherterFortschritt.falschBeantworteteFragen;
+      aktuelleFrageIndex = gespeicherterFortschritt.aktuelleFrageIndex;
+      aktuelleFrageNummer = gespeicherterFortschritt.aktuelleFrageNummer;
+    } else {
+      alert('Kein gespeicherter Spielstand gefunden.');
+      location.reload();
+    }
   } else {
-    nochNichtBeantworteteFragen = mischeFragen([...alleFragen]);
     starteNeuenBlock();
   }
 
-  document.getElementById('gesamt-fragen').textContent = aktuelleBlockFragen.length;
+  gesamtFragenElement.textContent = aktuelleBlockFragen.length;
   zeigeFrage();
   starteTimer();
 }
@@ -92,8 +151,7 @@ function mischeFragen(fragenArray) {
 // Funktion zum Anzeigen der aktuellen Frage
 function zeigeFrage() {
   const frageObj = aktuelleBlockFragen[aktuelleFrageIndex];
-  document.getElementById('frage-text').textContent = frageObj.frage;
-  const optionenContainer = document.getElementById('optionen-container');
+  frageText.textContent = frageObj.frage;
   optionenContainer.innerHTML = '';
   frageObj.optionen.forEach((option, index) => {
     const button = document.createElement('button');
@@ -105,8 +163,8 @@ function zeigeFrage() {
     optionenContainer.appendChild(button);
   });
 
-  document.getElementById('aktuelle-frage-nummer').textContent = aktuelleFrageNummer;
-  document.getElementById('weiter-button').disabled = true;
+  aktuelleFrageNummerElement.textContent = aktuelleFrageNummer;
+  weiterButton.disabled = true;
 }
 
 // Funktion zur Verarbeitung der ausgewählten Option
@@ -132,16 +190,16 @@ function waehleOption(auswahl, button) {
     buttons[frageObj.antwort - 1].classList.add('correct');
   }
 
-  document.getElementById('weiter-button').disabled = false;
+  weiterButton.disabled = false;
 }
 
 // Funktion zum Starten des Timers
 function starteTimer() {
   zeitUebrig = 30;
-  document.getElementById('zeit').textContent = zeitUebrig;
+  zeitElement.textContent = zeitUebrig;
   timer = setInterval(() => {
     zeitUebrig--;
-    document.getElementById('zeit').textContent = zeitUebrig;
+    zeitElement.textContent = zeitUebrig;
     if (zeitUebrig <= 0) {
       clearInterval(timer);
       // Zeit abgelaufen, zur nächsten Frage
@@ -168,7 +226,7 @@ function zurNaechstenFrage() {
     if (falschBeantworteteFragen.length > 0 || nochNichtBeantworteteFragen.length > 0) {
       starteNeuenBlock();
       if (aktuelleBlockFragen.length > 0) {
-        document.getElementById('gesamt-fragen').textContent = aktuelleBlockFragen.length;
+        gesamtFragenElement.textContent = aktuelleBlockFragen.length;
         zeigeFrage();
         starteTimer();
       } else {
@@ -183,28 +241,30 @@ function zurNaechstenFrage() {
 // Funktion zum Beenden des Quiz
 function quizBeenden() {
   // Zeige das Modal-Fenster an
-  document.getElementById('quiz-ende-modal').style.display = 'block';
+  quizEndeModal.style.display = 'block';
   localStorage.removeItem('quizFortschritt');
 }
 
 // Event Listener für den Weiter-Button
-document.getElementById('weiter-button').addEventListener('click', () => {
+weiterButton.addEventListener('click', () => {
   zurNaechstenFrage();
 });
 
 // Event Listener für den Speichern & Beenden-Button
-document.getElementById('speichern-button').addEventListener('click', () => {
+speichernButton.addEventListener('click', () => {
   speichereFortschritt();
   alert('Dein Fortschritt wurde gespeichert. Du kannst später weitermachen.');
 });
 
 // Event Listener für das Schließen des Modals
-document.getElementById('schliessen-button').addEventListener('click', () => {
-  document.getElementById('quiz-ende-modal').style.display = 'none';
+schliessenButton.addEventListener('click', () => {
+  quizEndeModal.style.display = 'none';
+  location.reload();
 });
 
 // Event Listener für den "Neu starten"-Button
-document.getElementById('neu-starten-button').addEventListener('click', () => {
+neuStartenButton.addEventListener('click', () => {
+  quizEndeModal.style.display = 'none';
   location.reload();
 });
 
@@ -225,13 +285,5 @@ function speichereFortschritt() {
 
 // Beim Laden der Seite
 window.onload = () => {
-  ladeFragen();
-  // Klick außerhalb des Modals schließt dieses
-  window.onclick = function(event) {
-    const modal = document.getElementById('quiz-ende-modal');
-    if (event.target == modal) {
-      modal.style.display = 'none';
-    }
-  };
+  // Nichts weiter zu tun, da das Startmenü angezeigt wird
 };
-
