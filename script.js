@@ -9,6 +9,7 @@ let falschBeantworteteFragen = [];
 let timer;
 let zeitUebrig = 30;
 let aktuelleFrageNummer = 1;
+const blockGroesse = 10;
 
 // Funktion zum Laden der Fragen aus der Textdatei
 function ladeFragen() {
@@ -77,7 +78,7 @@ function initialisiereQuiz() {
 // Funktion zum Starten eines neuen Blocks
 function starteNeuenBlock() {
   // Kombiniere falsch beantwortete Fragen mit neuen Fragen, um einen Block von bis zu 10 Fragen zu bilden
-  aktuelleBlockFragen = falschBeantworteteFragen.concat(nochNichtBeantworteteFragen.splice(0, 10 - falschBeantworteteFragen.length));
+  aktuelleBlockFragen = falschBeantworteteFragen.concat(nochNichtBeantworteteFragen.splice(0, blockGroesse - falschBeantworteteFragen.length));
   falschBeantworteteFragen = [];
   aktuelleFrageIndex = 0;
   aktuelleFrageNummer = 1;
@@ -99,20 +100,21 @@ function zeigeFrage() {
     button.textContent = option;
     button.classList.add('option-button');
     button.onclick = () => {
-      waehleOption(index + 1);
+      waehleOption(index + 1, button);
     };
     optionenContainer.appendChild(button);
   });
 
   document.getElementById('aktuelle-frage-nummer').textContent = aktuelleFrageNummer;
+  document.getElementById('weiter-button').disabled = true;
 }
 
 // Funktion zur Verarbeitung der ausgewählten Option
-function waehleOption(auswahl) {
+function waehleOption(auswahl, button) {
   const frageObj = aktuelleBlockFragen[aktuelleFrageIndex];
   const buttons = document.querySelectorAll('.option-button');
-  buttons.forEach(button => {
-    button.disabled = true;
+  buttons.forEach(btn => {
+    btn.disabled = true;
   });
 
   if (auswahl === frageObj.antwort) {
@@ -122,8 +124,12 @@ function waehleOption(auswahl) {
     if (index !== -1) {
       nochNichtBeantworteteFragen.splice(index, 1);
     }
+    button.classList.add('correct');
   } else {
     falschBeantworteteFragen.push(frageObj);
+    button.classList.add('incorrect');
+    // Zeige die korrekte Antwort an
+    buttons[frageObj.antwort - 1].classList.add('correct');
   }
 
   document.getElementById('weiter-button').disabled = false;
@@ -157,7 +163,6 @@ function zurNaechstenFrage() {
   if (aktuelleFrageIndex < aktuelleBlockFragen.length) {
     zeigeFrage();
     starteTimer();
-    document.getElementById('weiter-button').disabled = true;
   } else {
     // Nach dem Block prüfen, ob es falsch beantwortete Fragen oder noch unbeantwortete Fragen gibt
     if (falschBeantworteteFragen.length > 0 || nochNichtBeantworteteFragen.length > 0) {
@@ -166,7 +171,6 @@ function zurNaechstenFrage() {
         document.getElementById('gesamt-fragen').textContent = aktuelleBlockFragen.length;
         zeigeFrage();
         starteTimer();
-        document.getElementById('weiter-button').disabled = true;
       } else {
         quizBeenden();
       }
@@ -178,9 +182,9 @@ function zurNaechstenFrage() {
 
 // Funktion zum Beenden des Quiz
 function quizBeenden() {
-  alert('Herzlichen Glückwunsch! Du hast alle Fragen richtig beantwortet.');
+  // Zeige das Modal-Fenster an
+  document.getElementById('quiz-ende-modal').style.display = 'block';
   localStorage.removeItem('quizFortschritt');
-  location.reload();
 }
 
 // Event Listener für den Weiter-Button
@@ -192,6 +196,16 @@ document.getElementById('weiter-button').addEventListener('click', () => {
 document.getElementById('speichern-button').addEventListener('click', () => {
   speichereFortschritt();
   alert('Dein Fortschritt wurde gespeichert. Du kannst später weitermachen.');
+});
+
+// Event Listener für das Schließen des Modals
+document.getElementById('schliessen-button').addEventListener('click', () => {
+  document.getElementById('quiz-ende-modal').style.display = 'none';
+});
+
+// Event Listener für den "Neu starten"-Button
+document.getElementById('neu-starten-button').addEventListener('click', () => {
+  location.reload();
 });
 
 // Funktion zum Speichern des Fortschritts
@@ -212,4 +226,12 @@ function speichereFortschritt() {
 // Beim Laden der Seite
 window.onload = () => {
   ladeFragen();
+  // Klick außerhalb des Modals schließt dieses
+  window.onclick = function(event) {
+    const modal = document.getElementById('quiz-ende-modal');
+    if (event.target == modal) {
+      modal.style.display = 'none';
+    }
+  };
 };
+
