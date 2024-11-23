@@ -10,16 +10,16 @@ let timer;
 let zeitUebrig = 30;
 let aktuelleFrageNummer = 1;
 const blockGroesse = 10;
+let aktuelleDatei = null;
 
 // Elemente aus dem DOM
 const startmenue = document.getElementById('startmenue');
 const fragenHochladenButton = document.getElementById('fragen-hochladen-button');
 const dateiInput = document.getElementById('datei-input');
-const quizStartenButton = document.getElementById('quiz-starten-button');
-const weiterspielenButton = document.getElementById('weiterspielen-button');
 const quizContainer = document.getElementById('quiz-container');
 const weiterButton = document.getElementById('weiter-button');
 const speichernButton = document.getElementById('speichern-button');
+const hauptmenueButton = document.getElementById('hauptmenue-button');
 const frageText = document.getElementById('frage-text');
 const optionenContainer = document.getElementById('optionen-container');
 const aktuelleFrageNummerElement = document.getElementById('aktuelle-frage-nummer');
@@ -28,11 +28,11 @@ const zeitElement = document.getElementById('zeit');
 const quizEndeModal = document.getElementById('quiz-ende-modal');
 const schliessenButton = document.getElementById('schliessen-button');
 const neuStartenButton = document.getElementById('neu-starten-button');
-
-// Überprüfen, ob ein gespeicherter Spielstand vorhanden ist
-if (localStorage.getItem('quizFortschritt')) {
-  weiterspielenButton.disabled = false;
-}
+const dateiListeContainer = document.getElementById('datei-liste-container');
+const speicherplatzAnzeige = document.getElementById('speicherplatz-anzeige');
+const bestaetigungModal = document.getElementById('bestaetigung-modal');
+const jaButton = document.getElementById('ja-button');
+const neinButton = document.getElementById('nein-button');
 
 // Event Listener für "Fragen hochladen"
 fragenHochladenButton.addEventListener('click', () => {
@@ -46,11 +46,20 @@ dateiInput.addEventListener('change', (event) => {
     const reader = new FileReader();
     reader.onload = function(e) {
       const text = e.target.result;
-      alleFragen = parseFragen(text);
-      if (alleFragen.length > 0) {
-        nochNichtBeantworteteFragen = mischeFragen([...alleFragen]);
-        quizStartenButton.disabled = false;
+      const fragen = parseFragen(text);
+      if (fragen.length > 0) {
+        // Speichere die Datei und die Fragen im localStorage
+        const dateiName = file.name;
+        const dateien = JSON.parse(localStorage.getItem('quizDateien')) || {};
+        dateien[dateiName] = {
+          fragen: fragen,
+          richtigBeantwortet: 0,
+          gesamtFragen: fragen.length
+        };
+        localStorage.setItem('quizDateien', JSON.stringify(dateien));
+        updateDateiListe();
         alert('Fragen erfolgreich hochgeladen!');
+        dateiInput.value = ''; // Reset des Dateiauswahlfelds
       } else {
         alert('Die hochgeladene Datei enthält keine gültigen Fragen.');
       }
@@ -61,19 +70,91 @@ dateiInput.addEventListener('change', (event) => {
   }
 });
 
-// Event Listener für "Quiz starten"
-quizStartenButton.addEventListener('click', () => {
-  startmenue.style.display = 'none';
-  quizContainer.style.display = 'block';
-  initialisiereQuiz();
-});
+// Funktion zum Aktualisieren der Dateiliste
+function updateDateiListe() {
+  dateiListeContainer.innerHTML = '';
+  const dateien = JSON.parse(localStorage.getItem('quizDateien')) || {};
+  for (const [dateiName, dateiData] of Object.entries(dateien)) {
+    const dateiEintrag = document.createElement('div');
+    dateiEintrag.classList.add('datei-eintrag');
 
-// Event Listener für "Weiterspielen"
-weiterspielenButton.addEventListener('click', () => {
-  startmenue.style.display = 'none';
-  quizContainer.style.display = 'block';
-  initialisiereQuiz(true);
-});
+    const dateiInfo = document.createElement('div');
+    dateiInfo.classList.add('datei-info');
+
+    const dateiNameElement = document.createElement('div');
+    dateiNameElement.classList.add('datei-name');
+    dateiNameElement.textContent = dateiName;
+
+    const dateiStatistik = document.createElement('div');
+    dateiStatistik.classList.add('datei-statistik');
+    dateiStatistik.textContent = `${dateiData.richtigBeantwortet} von ${dateiData.gesamtFragen} richtig beantwortet`;
+
+    dateiInfo.appendChild(dateiNameElement);
+    dateiInfo.appendChild(dateiStatistik);
+
+    const dateiButtons = document.createElement('div');
+
+    const quizStartenButton = document.createElement('button');
+    quizStartenButton.textContent = 'Quiz starten';
+    quizStartenButton.classList.add('quiz-starten-button');
+    quizStartenButton.addEventListener('click', () => {
+      aktuelleDatei = dateiName;
+      startQuizMitDatei(dateiName);
+    });
+
+    const dateiLoeschenButton = document.createElement('button');
+    dateiLoeschenButton.textContent = 'Löschen';
+    dateiLoeschenButton.classList.add('datei-loeschen-button');
+    dateiLoeschenButton.addEventListener('click', () => {
+      if (confirm(`Möchtest du die Datei "${dateiName}" wirklich löschen?`)) {
+        delete dateien[dateiName];
+        localStorage.setItem('quizDateien', JSON.stringify(dateien));
+        updateDateiListe();
+        updateSpeicherplatzAnzeige();
+      }
+    });
+
+    dateiButtons.appendChild(quizStartenButton);
+    dateiButtons.appendChild(dateiLoeschenButton);
+
+    dateiEintrag.appendChild(dateiInfo);
+    dateiEintrag.appendChild(dateiButtons);
+
+    dateiListeContainer.appendChild(dateiEintrag);
+  }
+
+  updateSpeicherplatzAnzeige();
+}
+
+// Funktion zum Starten des Quiz mit ausgewählter Datei
+function startQuizMitDatei(dateiName) {
+  const dateien = JSON.parse(localStorage.getItem('quizDateien'));
+  if (dateien && dateien[dateiName]) {
+    alleFragen = dateien[dateiName].fragen;
+    nochNichtBeantworteteFragen = mischeFragen([...alleFragen]);
+    richtigBeantworteteFragen = [];
+    falschBeantworteteFragen = [];
+    aktuelleBlockFragen = [];
+    aktuelleFrageIndex = 0;
+    aktuelleFrageNummer = 1;
+    startmenue.style.display = 'none';
+    quizContainer.style.display = 'block';
+    starteNeuenBlock();
+    gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+    zeigeFrage();
+    starteTimer();
+  } else {
+    alert('Fehler beim Laden der Datei.');
+  }
+}
+
+// Funktion zum Aktualisieren der Speicherplatzanzeige
+function updateSpeicherplatzAnzeige() {
+  const total = 5 * 1024 * 1024; // 5 MB
+  const used = unescape(encodeURIComponent(JSON.stringify(localStorage))).length;
+  const remaining = total - used;
+  speicherplatzAnzeige.textContent = `Verfügbarer Speicherplatz: ${(remaining / 1024).toFixed(2)} KB von ${(total / 1024).toFixed(2)} KB`;
+}
 
 // Funktion zum Parsen der Textdatei in ein Array von Fragen
 function parseFragen(text) {
@@ -108,35 +189,8 @@ function parseFragen(text) {
   return fragenArray;
 }
 
-// Funktion zum Initialisieren des Quiz
-function initialisiereQuiz(fortsetzen = false) {
-  if (fortsetzen) {
-    // Gespeicherten Fortschritt laden
-    const gespeicherterFortschritt = JSON.parse(localStorage.getItem('quizFortschritt'));
-    if (gespeicherterFortschritt) {
-      alleFragen = gespeicherterFortschritt.alleFragen;
-      nochNichtBeantworteteFragen = gespeicherterFortschritt.nochNichtBeantworteteFragen;
-      aktuelleBlockFragen = gespeicherterFortschritt.aktuelleBlockFragen;
-      richtigBeantworteteFragen = gespeicherterFortschritt.richtigBeantworteteFragen;
-      falschBeantworteteFragen = gespeicherterFortschritt.falschBeantworteteFragen;
-      aktuelleFrageIndex = gespeicherterFortschritt.aktuelleFrageIndex;
-      aktuelleFrageNummer = gespeicherterFortschritt.aktuelleFrageNummer;
-    } else {
-      alert('Kein gespeicherter Spielstand gefunden.');
-      location.reload();
-    }
-  } else {
-    starteNeuenBlock();
-  }
-
-  gesamtFragenElement.textContent = aktuelleBlockFragen.length;
-  zeigeFrage();
-  starteTimer();
-}
-
 // Funktion zum Starten eines neuen Blocks
 function starteNeuenBlock() {
-  // Kombiniere falsch beantwortete Fragen mit neuen Fragen, um einen Block von bis zu 10 Fragen zu bilden
   aktuelleBlockFragen = falschBeantworteteFragen.concat(nochNichtBeantworteteFragen.splice(0, blockGroesse - falschBeantworteteFragen.length));
   falschBeantworteteFragen = [];
   aktuelleFrageIndex = 0;
@@ -177,16 +231,10 @@ function waehleOption(auswahl, button) {
 
   if (auswahl === frageObj.antwort) {
     richtigBeantworteteFragen.push(frageObj);
-    // Entferne die Frage aus nochNichtBeantworteteFragen, falls vorhanden
-    const index = nochNichtBeantworteteFragen.findIndex(f => f.frage === frageObj.frage);
-    if (index !== -1) {
-      nochNichtBeantworteteFragen.splice(index, 1);
-    }
     button.classList.add('correct');
   } else {
     falschBeantworteteFragen.push(frageObj);
     button.classList.add('incorrect');
-    // Zeige die korrekte Antwort an
     buttons[frageObj.antwort - 1].classList.add('correct');
   }
 
@@ -202,7 +250,6 @@ function starteTimer() {
     zeitElement.textContent = zeitUebrig;
     if (zeitUebrig <= 0) {
       clearInterval(timer);
-      // Zeit abgelaufen, zur nächsten Frage
       zurNaechstenFrage();
     }
   }, 1000);
@@ -222,7 +269,6 @@ function zurNaechstenFrage() {
     zeigeFrage();
     starteTimer();
   } else {
-    // Nach dem Block prüfen, ob es falsch beantwortete Fragen oder noch unbeantwortete Fragen gibt
     if (falschBeantworteteFragen.length > 0 || nochNichtBeantworteteFragen.length > 0) {
       starteNeuenBlock();
       if (aktuelleBlockFragen.length > 0) {
@@ -240,9 +286,18 @@ function zurNaechstenFrage() {
 
 // Funktion zum Beenden des Quiz
 function quizBeenden() {
-  // Zeige das Modal-Fenster an
+  aktualisiereDateiStatistik();
   quizEndeModal.style.display = 'block';
-  localStorage.removeItem('quizFortschritt');
+}
+
+// Funktion zum Aktualisieren der Datei-Statistik
+function aktualisiereDateiStatistik() {
+  const dateien = JSON.parse(localStorage.getItem('quizDateien'));
+  if (dateien && dateien[aktuelleDatei]) {
+    dateien[aktuelleDatei].richtigBeantwortet = richtigBeantworteteFragen.length;
+    localStorage.setItem('quizDateien', JSON.stringify(dateien));
+    updateDateiListe();
+  }
 }
 
 // Event Listener für den Weiter-Button
@@ -253,19 +308,41 @@ weiterButton.addEventListener('click', () => {
 // Event Listener für den Speichern & Beenden-Button
 speichernButton.addEventListener('click', () => {
   speichereFortschritt();
-  alert('Dein Fortschritt wurde gespeichert. Du kannst später weitermachen.');
+  bestaetigungModal.style.display = 'block';
 });
 
-// Event Listener für das Schließen des Modals
+// Event Listener für den Hauptmenü-Button
+hauptmenueButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'block';
+});
+
+// Event Listener für das Bestätigungs-Modal
+jaButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'none';
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  stoppeTimer();
+  updateDateiListe();
+});
+
+neinButton.addEventListener('click', () => {
+  bestaetigungModal.style.display = 'none';
+});
+
+// Event Listener für das Schließen des Quiz-Ende Modals
 schliessenButton.addEventListener('click', () => {
   quizEndeModal.style.display = 'none';
-  location.reload();
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  updateDateiListe();
 });
 
 // Event Listener für den "Neu starten"-Button
 neuStartenButton.addEventListener('click', () => {
   quizEndeModal.style.display = 'none';
-  location.reload();
+  quizContainer.style.display = 'none';
+  startmenue.style.display = 'block';
+  updateDateiListe();
 });
 
 // Funktion zum Speichern des Fortschritts
@@ -277,13 +354,33 @@ function speichereFortschritt() {
     richtigBeantworteteFragen,
     falschBeantworteteFragen,
     aktuelleFrageIndex,
-    aktuelleFrageNummer
+    aktuelleFrageNummer,
+    aktuelleDatei
   };
   localStorage.setItem('quizFortschritt', JSON.stringify(fortschritt));
-  stoppeTimer();
+  aktualisiereDateiStatistik();
 }
 
 // Beim Laden der Seite
 window.onload = () => {
-  // Nichts weiter zu tun, da das Startmenü angezeigt wird
+  updateDateiListe();
+  // Prüfen, ob ein gespeicherter Fortschritt vorhanden ist
+  const gespeicherterFortschritt = JSON.parse(localStorage.getItem('quizFortschritt'));
+  if (gespeicherterFortschritt) {
+    if (confirm('Du hast einen gespeicherten Fortschritt. Möchtest du fortfahren?')) {
+      aktuelleDatei = gespeicherterFortschritt.aktuelleDatei;
+      alleFragen = gespeicherterFortschritt.alleFragen;
+      nochNichtBeantworteteFragen = gespeicherterFortschritt.nochNichtBeantworteteFragen;
+      aktuelleBlockFragen = gespeicherterFortschritt.aktuelleBlockFragen;
+      richtigBeantworteteFragen = gespeicherterFortschritt.richtigBeantworteteFragen;
+      falschBeantworteteFragen = gespeicherterFortschritt.falschBeantworteteFragen;
+      aktuelleFrageIndex = gespeicherterFortschritt.aktuelleFrageIndex;
+      aktuelleFrageNummer = gespeicherterFortschritt.aktuelleFrageNummer;
+      startmenue.style.display = 'none';
+      quizContainer.style.display = 'block';
+      gesamtFragenElement.textContent = aktuelleBlockFragen.length;
+      zeigeFrage();
+      starteTimer();
+    }
+  }
 };
