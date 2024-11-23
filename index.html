@@ -11,8 +11,12 @@
     <h1>Willkommen zur Quiz-App</h1>
     <button id="fragen-hochladen-button">Fragen hochladen</button>
     <input type="file" id="datei-input" accept=".txt">
-    <button id="quiz-starten-button" disabled>Quiz starten</button>
-    <button id="weiterspielen-button" disabled>Weiterspielen</button>
+    <div id="datei-liste-container">
+      <!-- Liste der hochgeladenen Dateien wird hier eingefügt -->
+    </div>
+    <div id="speicherplatz-anzeige">
+      <!-- Anzeige des verfügbaren Speicherplatzes -->
+    </div>
   </div>
 
   <!-- Quiz-Container (versteckt beim Start) -->
@@ -29,6 +33,7 @@
     <div id="fortschritt">
       Frage <span id="aktuelle-frage-nummer">1</span> von <span id="gesamt-fragen">10</span>
     </div>
+    <button id="hauptmenue-button">Hauptmenü</button>
     <button id="speichern-button">Speichern & Beenden</button>
   </div>
 
@@ -42,7 +47,15 @@
     </div>
   </div>
 
+  <!-- Modal für Bestätigung -->
+  <div id="bestaetigung-modal" class="modal">
+    <div class="modal-content">
+      <p>Möchtest du zum Hauptmenü zurückkehren?</p>
+      <button id="ja-button">Ja</button>
+      <button id="nein-button">Nein</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
-
