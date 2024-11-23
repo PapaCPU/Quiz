@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz-App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="quiz-container">
+    <h1>Quiz-App</h1>
+    <div id="timer">Zeit: <span id="zeit">30</span> Sekunden</div>
+    <div id="frage-container">
+      <h2 id="frage-text"></h2>
+      <div id="optionen-container">
+        <!-- Antwortoptionen werden hier dynamisch eingefügt -->
+      </div>
+    </div>
+    <button id="weiter-button" disabled>Weiter</button>
+    <div id="fortschritt">
+      Frage <span id="aktuelle-frage-nummer">1</span> von <span id="gesamt-fragen">10</span>
+    </div>
+    <button id="speichern-button">Speichern & Beenden</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
