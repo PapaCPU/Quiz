@@ -1,5 +1,4 @@
-/* styles.css */
-
+/* Allgemeine Einstellungen */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f7f7f7;
@@ -7,6 +6,48 @@ body {
   padding: 0;
 }
 
+/* Startmenü */
+#startmenue {
+  max-width: 600px;
+  margin: 50px auto;
+  background-color: #ffffff;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#startmenue h1 {
+  margin-bottom: 40px;
+  color: #333333;
+}
+
+#startmenue button {
+  background-color: #007BFF;
+  color: #ffffff;
+  border: none;
+  padding: 15px 30px;
+  margin: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#startmenue button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+#startmenue button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Verstecktes Datei-Input */
+#datei-input {
+  display: none;
+}
+
+/* Quiz-Container */
 #quiz-container {
   max-width: 600px;
   margin: 50px auto;
@@ -90,6 +131,7 @@ body {
   color: #555555;
 }
 
+/* Modal-Fenster */
 .modal {
   display: none; 
   position: fixed; 
@@ -144,7 +186,7 @@ body {
 }
 
 @media screen and (max-width: 600px) {
-  #quiz-container {
+  #quiz-container, #startmenue {
     margin: 20px;
     padding: 20px;
   }
@@ -158,7 +200,7 @@ body {
     padding: 12px;
   }
 
-  #weiter-button, #speichern-button {
+  #weiter-button, #speichern-button, #startmenue button {
     font-size: 16px;
     padding: 12px;
   }
