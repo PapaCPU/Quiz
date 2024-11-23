@@ -1,24 +1,34 @@
 /* Allgemeine Einstellungen */
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f7f7;
+  background-color: #f0f2f5;
   margin: 0;
   padding: 0;
 }
 
-/* Startmenü */
-#startmenue {
+/* Container-Klasse für zentrierte Inhalte */
+.container {
   max-width: 600px;
   margin: 20px auto;
   background-color: #ffffff;
   padding: 20px;
-  text-align: center;
+  box-sizing: border-box;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Startmenü */
+#startmenue {
+  text-align: center;
 }
 
 #startmenue h1 {
   margin-bottom: 30px;
   color: #333333;
+  font-size: 2em;
 }
 
 #startmenue button {
@@ -27,10 +37,12 @@ body {
   border: none;
   padding: 15px 20px;
   margin: 10px 5px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 300px;
 }
 
 #startmenue button:hover:not(:disabled) {
@@ -54,8 +66,7 @@ body {
 
 .datei-eintrag {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   background-color: #e9ecef;
   padding: 10px;
   margin-bottom: 10px;
@@ -63,62 +74,72 @@ body {
 }
 
 .datei-info {
-  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .datei-name {
   font-weight: bold;
+  font-size: 1em;
 }
 
 .datei-statistik {
-  font-size: 14px;
+  font-size: 0.9em;
   color: #555555;
+}
+
+.datei-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.datei-buttons button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 10px;
+  font-size: 0.9em;
 }
 
 .datei-loeschen-button {
   background-color: #dc3545;
-  color: #ffffff;
-  border: none;
-  padding: 8px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 5px;
-  margin-left: 10px;
 }
 
 .datei-loeschen-button:hover {
   background-color: #c82333;
 }
 
+.quiz-starten-button {
+  background-color: #28a745;
+}
+
+.quiz-starten-button:hover {
+  background-color: #218838;
+}
+
 /* Speicherplatz-Anzeige */
 #speicherplatz-anzeige {
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 0.9em;
   color: #555555;
 }
 
 /* Quiz-Container */
-#quiz-container {
-  max-width: 600px;
-  margin: 20px auto;
-  background-color: #ffffff;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 #quiz-container h1 {
   text-align: center;
   color: #333333;
+  font-size: 2em;
 }
 
 #timer {
   text-align: right;
-  font-size: 16px;
+  font-size: 1em;
   color: #555555;
 }
 
 #frage-text {
-  font-size: 20px;
+  font-size: 1.5em;
   margin-bottom: 15px;
   color: #333333;
 }
@@ -134,7 +155,7 @@ body {
   border: none;
   padding: 12px;
   margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -157,7 +178,7 @@ body {
   color: #ffffff;
   border: none;
   padding: 12px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
   border-radius: 5px;
   width: 100%;
@@ -177,8 +198,25 @@ body {
 #fortschritt {
   text-align: center;
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 0.9em;
   color: #555555;
+}
+
+/* Fortschrittsbalken */
+#fortschrittsbalken-container {
+  background-color: #e9ecef;
+  border-radius: 5px;
+  margin-top: 10px;
+  height: 20px;
+  width: 100%;
+}
+
+#fortschrittsbalken {
+  background-color: #28a745;
+  height: 100%;
+  width: 0%;
+  border-radius: 5px;
+  transition: width 0.3s ease;
 }
 
 /* Modal-Fenster */
@@ -199,7 +237,7 @@ body {
   margin: 20% auto; 
   padding: 20px;
   border: 1px solid #888888;
-  width: 80%; 
+  width: 90%; 
   max-width: 400px;
   text-align: center;
   border-radius: 10px;
@@ -208,7 +246,7 @@ body {
 .close-button {
   color: #aaaaaa;
   float: right;
-  font-size: 24px;
+  font-size: 1.5em;
   font-weight: bold;
   cursor: pointer;
 }
@@ -225,34 +263,37 @@ body {
   color: #ffffff;
   border: none;
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: 1em;
   cursor: pointer;
   border-radius: 5px;
   margin: 10px 5px;
+  width: 100%;
 }
 
 #neu-starten-button:hover, #ja-button:hover, #nein-button:hover {
   background-color: #218838;
 }
 
-@media screen and (max-width: 600px) {
-  #quiz-container, #startmenue {
-    margin: 10px;
-    padding: 15px;
+/* Responsive Anpassungen */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5em;
+  }
+
+  #startmenue button,
+  .option-button,
+  #weiter-button,
+  #speichern-button,
+  #hauptmenue-button,
+  #neu-starten-button,
+  #ja-button,
+  #nein-button {
+    font-size: 1em;
+    padding: 10px;
   }
 
   #frage-text {
-    font-size: 18px;
-  }
-
-  .option-button {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  #weiter-button, #speichern-button, #hauptmenue-button, #startmenue button {
-    font-size: 14px;
-    padding: 10px;
+    font-size: 1.2em;
   }
 
   .modal-content {
