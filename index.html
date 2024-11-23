@@ -6,7 +6,17 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="quiz-container">
+  <!-- Startmenü -->
+  <div id="startmenue">
+    <h1>Willkommen zur Quiz-App</h1>
+    <button id="fragen-hochladen-button">Fragen hochladen</button>
+    <input type="file" id="datei-input" accept=".txt">
+    <button id="quiz-starten-button" disabled>Quiz starten</button>
+    <button id="weiterspielen-button" disabled>Weiterspielen</button>
+  </div>
+
+  <!-- Quiz-Container (versteckt beim Start) -->
+  <div id="quiz-container" style="display: none;">
     <h1>Quiz-App</h1>
     <div id="timer">Zeit: <span id="zeit">30</span> Sekunden</div>
     <div id="frage-container">
