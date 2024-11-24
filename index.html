@@ -27,6 +27,10 @@
   <main id="quiz-container" class="container" style="display: none;">
     <h1>Quiz-App</h1>
     <div id="timer">Zeit: <span id="zeit">30</span> Sekunden</div>
+    <!-- Video-Container -->
+    <div id="video-container" style="display: none;">
+      <iframe id="youtube-player" width="560" height="315" frameborder="0" allowfullscreen></iframe>
+    </div>
     <div id="frage-container">
       <h2 id="frage-text"></h2>
       <div id="optionen-container" role="radiogroup">
@@ -61,6 +65,17 @@
       <p>Möchtest du zum Hauptmenü zurückkehren?</p>
       <button id="ja-button">Ja</button>
       <button id="nein-button">Nein</button>
+    </div>
+  </div>
+
+  <!-- Modal für YouTube-Link-Eingabe -->
+  <div id="youtube-modal" class="modal">
+    <div class="modal-content">
+      <span id="youtube-schliessen-button" class="close-button">&times;</span>
+      <h2>YouTube-Link hinzufügen</h2>
+      <p>Möchtest du einen YouTube-Link zu dieser Datei hinzufügen?</p>
+      <input type="url" id="youtube-link-input" placeholder="YouTube-Link eingeben">
+      <button id="youtube-speichern-button">Speichern</button>
     </div>
   </div>
 
