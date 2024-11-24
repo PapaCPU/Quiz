@@ -37,12 +37,10 @@ const bestaetigungModal = document.getElementById('bestaetigung-modal');
 const jaButton = document.getElementById('ja-button');
 const neinButton = document.getElementById('nein-button');
 const fortschrittsbalken = document.getElementById('fortschrittsbalken');
-const videoContainer = document.getElementById('video-container');
-const youtubePlayer = document.getElementById('youtube-player');
 const youtubeModal = document.getElementById('youtube-modal');
-const youtubeSchliessenButton = document.getElementById('youtube-schliessen-button');
 const youtubeLinkInput = document.getElementById('youtube-link-input');
 const youtubeSpeichernButton = document.getElementById('youtube-speichern-button');
+const youtubeOhneButton = document.getElementById('youtube-ohne-button');
 
 // Event Listener für "Fragen hochladen"
 fragenHochladenButton.addEventListener('click', () => {
@@ -76,15 +74,24 @@ dateiInput.addEventListener('change', (event) => {
   }
 });
 
-// Event Listener für YouTube-Link-Modal
+// Event Listener für YouTube-Link-Modal Buttons
 youtubeSpeichernButton.addEventListener('click', () => {
   const youtubeLink = youtubeLinkInput.value.trim();
+  speichereDateiMitLink(youtubeLink);
+});
+
+youtubeOhneButton.addEventListener('click', () => {
+  speichereDateiMitLink('');
+});
+
+// Funktion zum Speichern der Datei mit oder ohne YouTube-Link
+function speichereDateiMitLink(youtubeLink) {
   const dateien = JSON.parse(localStorage.getItem('quizDateien')) || {};
   dateien[tempDateiName] = {
     fragen: tempFragen,
     richtigBeantwortet: dateien[tempDateiName] ? dateien[tempDateiName].richtigBeantwortet : 0,
     gesamtFragen: tempFragen.length,
-    youtubeLink: youtubeLink ? youtubeLink : ''
+    youtubeLink: youtubeLink
   };
   localStorage.setItem('quizDateien', JSON.stringify(dateien));
   youtubeModal.style.display = 'none';
@@ -92,15 +99,8 @@ youtubeSpeichernButton.addEventListener('click', () => {
   tempDateiName = '';
   tempFragen = [];
   updateDateiListe();
-  alert('Fragen und YouTube-Link erfolgreich gespeichert!');
-});
-
-youtubeSchliessenButton.addEventListener('click', () => {
-  youtubeModal.style.display = 'none';
-  youtubeLinkInput.value = '';
-  tempDateiName = '';
-  tempFragen = [];
-});
+  alert('Fragen erfolgreich gespeichert!');
+}
 
 // Funktion zum Aktualisieren der Dateiliste
 function updateDateiListe() {
@@ -165,19 +165,26 @@ function updateDateiListe() {
 
     dateiButtonsContainer.appendChild(dateiLoeschenButton);
 
-    // Wenn ein YouTube-Link vorhanden ist
-    if (dateiData.youtubeLink && dateiData.youtubeLink !== '') {
-      const videoAnsehenButton = document.createElement('button');
-      videoAnsehenButton.textContent = 'Video ansehen';
-      videoAnsehenButton.classList.add('video-ansehen-button');
-      videoAnsehenButton.addEventListener('click', () => {
-        window.open(dateiData.youtubeLink, '_blank');
-      });
-      dateiButtonsContainer.appendChild(videoAnsehenButton);
-    }
-
     dateiEintrag.appendChild(dateiInfo);
     dateiEintrag.appendChild(dateiButtonsContainer);
+
+    // Wenn ein YouTube-Link vorhanden ist, zeige den Player
+    if (dateiData.youtubeLink && dateiData.youtubeLink !== '') {
+      const videoContainer = document.createElement('div');
+      videoContainer.classList.add('video-container');
+      const youtubePlayer = document.createElement('iframe');
+      youtubePlayer.width = '100%';
+      youtubePlayer.height = '315';
+      youtubePlayer.frameBorder = '0';
+      youtubePlayer.allowFullscreen = true;
+
+      const videoId = getYouTubeVideoId(dateiData.youtubeLink);
+      if (videoId) {
+        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId;
+        videoContainer.appendChild(youtubePlayer);
+        dateiEintrag.appendChild(videoContainer);
+      }
+    }
 
     dateiListeContainer.appendChild(dateiEintrag);
   }
@@ -203,18 +210,6 @@ function startQuizMitDatei(dateiName) {
     updateFortschrittsbalken();
     zeigeFrage();
     starteTimer();
-
-    // YouTube-Video einbinden
-    if (dateien[dateiName].youtubeLink && dateien[dateiName].youtubeLink !== '') {
-      const youtubeLink = dateien[dateiName].youtubeLink;
-      const videoId = getYouTubeVideoId(youtubeLink);
-      if (videoId) {
-        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId;
-        videoContainer.style.display = 'block';
-      }
-    } else {
-      videoContainer.style.display = 'none';
-    }
   } else {
     alert('Fehler beim Laden der Datei.');
   }
@@ -222,9 +217,9 @@ function startQuizMitDatei(dateiName) {
 
 // Funktion zum Extrahieren der Video-ID aus einem YouTube-Link
 function getYouTubeVideoId(url) {
-  const regex = /(?:\?v=|\/embed\/|\.be\/)([^&\n?#]+)/;
+  const regex = /(?:\?v=|\/embed\/|\.be\/|\/watch\?v=|\/v\/|\/u\/\w\/|\/embed\/|\/watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regex);
-  return match ? match[1] : null;
+  return match && match[1].length === 11 ? match[1] : null;
 }
 
 // Funktion zum Aktualisieren der Speicherplatzanzeige
@@ -419,19 +414,6 @@ function ladeGespeichertenFortschritt(dateiName) {
     updateFortschrittsbalken();
     zeigeFrage();
     starteTimer();
-
-    // YouTube-Video einbinden
-    const dateien = JSON.parse(localStorage.getItem('quizDateien'));
-    if (dateien[dateiName].youtubeLink && dateien[dateiName].youtubeLink !== '') {
-      const youtubeLink = dateien[dateiName].youtubeLink;
-      const videoId = getYouTubeVideoId(youtubeLink);
-      if (videoId) {
-        youtubePlayer.src = 'https://www.youtube.com/embed/' + videoId;
-        videoContainer.style.display = 'block';
-      }
-    } else {
-      videoContainer.style.display = 'none';
-    }
   } else {
     alert('Kein gespeicherter Fortschritt gefunden.');
   }
