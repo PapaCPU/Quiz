@@ -91,13 +91,14 @@ body {
 
 .datei-buttons {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   margin-top: 10px;
 }
 
 .datei-buttons button {
   flex: 1;
-  margin: 0 5px;
+  margin: 5px;
   padding: 10px;
   font-size: 0.9em;
 }
@@ -116,6 +117,22 @@ body {
 
 .quiz-starten-button:hover {
   background-color: #218838;
+}
+
+.fortsetzen-button {
+  background-color: #17a2b8;
+}
+
+.fortsetzen-button:hover {
+  background-color: #138496;
+}
+
+.video-ansehen-button {
+  background-color: #ffc107;
+}
+
+.video-ansehen-button:hover {
+  background-color: #e0a800;
 }
 
 /* Speicherplatz-Anzeige */
@@ -138,6 +155,18 @@ body {
   color: #555555;
 }
 
+#video-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+#youtube-player {
+  width: 100%;
+  max-width: 560px;
+  height: 315px;
+}
+
+/* Frage und Optionen */
 #frage-text {
   font-size: 1.5em;
   margin-bottom: 15px;
@@ -234,7 +263,7 @@ body {
 
 .modal-content {
   background-color: #ffffff;
-  margin: 20% auto; 
+  margin: 10% auto; 
   padding: 20px;
   border: 1px solid #888888;
   width: 90%; 
@@ -258,7 +287,7 @@ body {
   cursor: pointer;
 }
 
-#neu-starten-button, #ja-button, #nein-button {
+#neu-starten-button, #ja-button, #nein-button, #youtube-speichern-button {
   background-color: #28a745;
   color: #ffffff;
   border: none;
@@ -270,8 +299,17 @@ body {
   width: 100%;
 }
 
-#neu-starten-button:hover, #ja-button:hover, #nein-button:hover {
+#neu-starten-button:hover, #ja-button:hover, #nein-button:hover, #youtube-speichern-button:hover {
   background-color: #218838;
+}
+
+#youtube-link-input {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  font-size: 1em;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
 }
 
 /* Responsive Anpassungen */
@@ -287,7 +325,8 @@ body {
   #hauptmenue-button,
   #neu-starten-button,
   #ja-button,
-  #nein-button {
+  #nein-button,
+  #youtube-speichern-button {
     font-size: 1em;
     padding: 10px;
   }
@@ -299,5 +338,9 @@ body {
   .modal-content {
     margin-top: 50%;
     padding: 15px;
+  }
+
+  #youtube-player {
+    height: auto;
   }
 }
